@@ -2,12 +2,14 @@ micronaut:
   application:
     name: abi_accounts-main2
   security:
+    enabled: true
+    authentication: bearer
     token:
       jwt:
-        enabled: true
-        generator:
-          secret: ${JWT_GENERATOR_SIGNATURE_SECRET}
-
+        signatures:
+          secret:
+            generator:
+              secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
 datasources:
   default:
     db-type: postgres

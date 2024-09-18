@@ -1,25 +1,30 @@
 package bi.accounting.controller;
 
 import bi.accounting.dto.AccountDTO;
-import bi.accounting.model.Account;
 import bi.accounting.repository.AccountRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.micronaut.http.HttpStatus;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.security.authentication.Authentication;
 import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller("/accounts")
+@Secured(SecurityRule.IS_AUTHENTICATED)  // Ensure only authenticated users can access
 public class AccountController {
 
     @Inject
     private AccountRepository accountRepository;
 
     @Get("/")
-    public List<AccountDTO> getAllAccounts() {
-        return accountRepository.findAll()
+    public List<AccountDTO> getAllAccounts(Authentication authentication) {
+        String userIdString = (String) authentication.getAttributes().get("sub");
+        Long userId = Long.parseLong(userIdString);
+
+        return accountRepository.findByUserId(userId)
                 .stream()
                 .map(account -> new AccountDTO(
                         account.getId(),

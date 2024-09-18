@@ -3,6 +3,7 @@ package bi.accounting.dto;
 import io.micronaut.core.annotation.Introspected;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Introspected
 public class AccountDTO {
@@ -12,9 +13,9 @@ public class AccountDTO {
     private String orgId;
     private String provider;
     private Long userId;
-    private OffsetDateTime dateCreated;
-    private OffsetDateTime dateUpdated;
-    private OffsetDateTime deletedAt;
+    private String dateCreated;
+    private String dateUpdated;
+    private String deletedAt;
     private Boolean isDeleted;
     private String providerId;
 
@@ -24,12 +25,13 @@ public class AccountDTO {
         this.orgId = orgId;
         this.provider = provider;
         this.userId = userId;
-        this.dateCreated = dateCreated;
-        this.dateUpdated = dateUpdated;
-        this.deletedAt = deletedAt;
+        this.dateCreated = dateCreated != null ? dateCreated.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
+        this.dateUpdated = dateUpdated != null ? dateUpdated.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
+        this.deletedAt = deletedAt != null ? deletedAt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
         this.isDeleted = isDeleted;
         this.providerId = providerId;
     }
+
     public Long getId() {
         return id;
     }
@@ -70,27 +72,27 @@ public class AccountDTO {
         this.userId = userId;
     }
 
-    public OffsetDateTime getDateCreated() {
+    public String getDateCreated() {
         return dateCreated;
     }
 
-    public void setDateCreated(OffsetDateTime dateCreated) {
+    public void setDateCreated(String dateCreated) {
         this.dateCreated = dateCreated;
     }
 
-    public OffsetDateTime getDateUpdated() {
+    public String getDateUpdated() {
         return dateUpdated;
     }
 
-    public void setDateUpdated(OffsetDateTime dateUpdated) {
+    public void setDateUpdated(String dateUpdated) {
         this.dateUpdated = dateUpdated;
     }
 
-    public OffsetDateTime getDeletedAt() {
+    public String getDeletedAt() {
         return deletedAt;
     }
 
-    public void setDeletedAt(OffsetDateTime deletedAt) {
+    public void setDeletedAt(String deletedAt) {
         this.deletedAt = deletedAt;
     }
 
