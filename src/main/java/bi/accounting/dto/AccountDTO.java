@@ -9,16 +9,15 @@ public class AccountDTO {
 
     private Long id;
     private String orgName;
-    private String orgId;  // Ensure this is a String
+    private String orgId;
     private String provider;
     private Long userId;
-    private OffsetDateTime dateCreated;  // Use OffsetDateTime
-    private OffsetDateTime dateUpdated;  // Use OffsetDateTime
-    private OffsetDateTime deletedAt;    // Ensure this is included
-    private Boolean isDeleted;           // Ensure this is included
+    private OffsetDateTime dateCreated;
+    private OffsetDateTime dateUpdated;
+    private OffsetDateTime deletedAt;
+    private Boolean isDeleted;
     private String providerId;
 
-    // Constructor, Getters, and Setters
     public AccountDTO(Long id, String orgName, String orgId, String provider, Long userId, OffsetDateTime dateCreated, OffsetDateTime dateUpdated, OffsetDateTime deletedAt, Boolean isDeleted, String providerId) {
         this.id = id;
         this.orgName = orgName;

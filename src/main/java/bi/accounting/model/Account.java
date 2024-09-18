@@ -11,17 +11,17 @@ import java.time.OffsetDateTime;
 public class Account {
 
     @Id
-    private Long id;  // bigint corresponds to Long
+    private Long id;
 
-    private String orgName;        // character varying corresponds to String
-    private String orgId;          // character varying corresponds to String
-    private String provider;       // character varying corresponds to String
-    private Long userId;           // bigint corresponds to Long
-    private OffsetDateTime dateCreated;  // timestamp with time zone corresponds to OffsetDateTime
-    private OffsetDateTime dateUpdated;  // timestamp with time zone corresponds to OffsetDateTime
-    private OffsetDateTime deletedAt;    // timestamp with time zone corresponds to OffsetDateTime
-    private Boolean isDeleted;     // boolean corresponds to Boolean
-    private String providerId;     // character varying corresponds to String
+    private String orgName;
+    private String orgId;
+    private String provider;
+    private Long userId;
+    private OffsetDateTime dateCreated;
+    private OffsetDateTime dateUpdated;
+    private OffsetDateTime deletedAt;
+    private Boolean isDeleted;
+    private String providerId;
 
     // Getters and setters
     public Long getId() {
@@ -52,9 +52,7 @@ public class Account {
         return provider;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
+    public void setProvider(String provider) { this.provider = provider;}
 
     public Long getUserId() {
         return userId;
