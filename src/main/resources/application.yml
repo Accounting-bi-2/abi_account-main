@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: abi_accounts-main2
+    name: abi_accounts
   security:
     enabled: true
     authentication: bearer

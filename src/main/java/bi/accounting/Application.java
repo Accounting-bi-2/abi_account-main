@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "abi_accounts-main2",
+                title = "abi_accounts",
                 version = "0.0"
         )
 )
