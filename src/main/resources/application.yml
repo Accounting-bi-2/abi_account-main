@@ -1,7 +1,26 @@
 micronaut:
   application:
     name: abi_accounts
+  logger:
+    levels:
+      io.r2dbc.postgresql.client.ReactorNettyClient: INFO
+  server:
+    base-url: ${APP_BASE_URL:http://localhost:8080}
+    port: ${APP_PORT:8080}
+    cors:
+      enabled: true
   security:
+    intercept-url-map:
+      - pattern: /accounts/**
+        httpMethod: GET
+        access:
+          - isAuthenticated()
+      - pattern: /swagger-ui/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger/**
+        access:
+          - isAnonymous()
     enabled: true
     authentication: bearer
     token:
@@ -10,12 +29,24 @@ micronaut:
           secret:
             generator:
               secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
+  http:
+    services:
+      accounts:
+        url: ${ACCOUNTS_URL}/accounts-service/
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
 datasources:
   default:
     db-type: postgres
     dialect: POSTGRES
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${PG_HOST}:${PG_PORT}/${PG_DBNAME}
-    username: ${PG_USER}
-    password: ${PG_PASSWORD}
+    url: jdbc:postgresql://${PG_HOST:database-2.cluster-cvgk2wmwekj7.eu-west-3.rds.amazonaws.com}:${PG_PORT:5432}/${PG_DBNAME:postgres}
+    username: ${PG_USER:postgres}
+    password: ${PG_PASSWORD:TtaQHd|~_Oa6~kd[#kk!$Z7Ecoqk}
     schema: accounts_schema

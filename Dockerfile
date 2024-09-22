@@ -10,7 +10,7 @@ RUN gu install native-image
 RUN ./gradlew nativeCompile
 
 # Stage 2: Create the final Docker image
-FROM oraclelinux:8-slim
+FROM arm64v8/oraclelinux:8-slim
 
 # Install required dependencies
 RUN microdnf install -y libstdc++

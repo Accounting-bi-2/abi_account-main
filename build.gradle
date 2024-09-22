@@ -17,6 +17,7 @@ dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation("io.swagger.core.v3:swagger-annotations")
     implementation("io.micronaut:micronaut-jackson-databind") // This is crucial for JSON serialization
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.data:micronaut-data-jdbc")
@@ -84,5 +85,16 @@ micronaut {
     }
 }
 
+task dockerBuildImage(type:Exec) {
+    group 'build'
+    description "Builds amd64 image"
+    dependsOn dockerfile, buildLayers
+    workingDir 'build/docker/main'
+    executable 'docker'
+    args = ['build', '--no-cache', '--platform', 'linux/amd64', '-t', "abi-users:latest", '-f', 'Dockerfile',  '.']
+}
 
+dockerfileNative {
+    graalArch.set("aarch64")
+}
 

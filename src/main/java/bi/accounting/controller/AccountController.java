@@ -7,6 +7,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.authentication.Authentication;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
 
 import java.util.List;
@@ -19,6 +20,13 @@ public class AccountController {
     @Inject
     private AccountRepository accountRepository;
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get(uri = "/health", produces = "text/plain")
+    public String index() {
+        return "OK";
+    }
+
+    @Operation(summary = "Get greeting message")
     @Get("/")
     public List<AccountDTO> getAllAccounts(Authentication authentication) {
         String userIdString = (String) authentication.getAttributes().get("sub");
