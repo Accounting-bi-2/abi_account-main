@@ -10,6 +10,9 @@ import java.util.List;
 
 @JdbcRepository(dialect = Dialect.POSTGRES)
 public interface AccountRepository extends CrudRepository<Account, Long> {
-    // Add custom queries if needed
+
+    List<Account> findByUserIdAndIsDeletedFalse(Long userId);
     List<Account> findByUserId(Long userId);
+    Account findByOrgId(String orgId);
+
 }
