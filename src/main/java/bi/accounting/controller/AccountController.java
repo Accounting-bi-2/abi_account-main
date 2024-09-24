@@ -33,7 +33,6 @@ public class AccountController {
         return "OK";
     }
 
-    @Operation(summary = "Get greeting message")
     @Get("/")
     public List<AccountDTO> getAllAccounts(Authentication authentication) {
         String userIdString = (String) authentication.getAttributes().get("sub");
@@ -109,6 +108,28 @@ public class AccountController {
         );
         return HttpResponse.ok(getAccountDTO);
 
+    }
+
+    @Get("/unsafe")
+    public List<AccountDTO> getAllAccountsUnSafe(Authentication authentication) {
+        String userIdString = (String) authentication.getAttributes().get("sub");
+        Long userId = Long.parseLong(userIdString);
+
+        return accountRepository.findByUserIdAndIsDeletedFalse(userId)
+                .stream()
+                .map(account -> new AccountDTO(
+                        account.getId(),
+                        account.getOrgName(),
+                        account.getOrgId(),
+                        account.getProvider(),
+                        account.getUserId(),
+                        account.getDateCreated(),
+                        account.getDateUpdated(),
+                        account.getDeletedAt(),
+                        account.getIsDeleted(),
+                        account.getProviderId()
+                ))
+                .collect(Collectors.toList());
     }
 
 
