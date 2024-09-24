@@ -14,5 +14,5 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     List<Account> findByUserIdAndIsDeletedFalse(Long userId);
     List<Account> findByUserId(Long userId);
     Account findByOrgId(String orgId);
-
+    Account findByOrgIdAndUserId(String orgId, Long userId);
 }

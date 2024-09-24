@@ -1,6 +1,7 @@
 package bi.accounting.controller;
 
 import bi.accounting.dto.AccountDTO;
+import bi.accounting.model.Account;
 import bi.accounting.repository.AccountRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -83,22 +84,31 @@ public class AccountController {
         return HttpResponse.ok(deletedAccountDTO);
     }
 
-    @Get("/{id}")
-    public AccountDTO getAccountById(Long id) {
-        return accountRepository.findById(id)
-                .map(account -> new AccountDTO(
-                        account.getId(),
-                        account.getOrgName(),
-                        account.getOrgId(),
-                        account.getProvider(),
-                        account.getUserId(),
-                        account.getDateCreated(),
-                        account.getDateUpdated(),
-                        account.getDeletedAt(),
-                        account.getIsDeleted(),
-                        account.getProviderId()
-                ))
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+    @Get("{orgId}")
+    public HttpResponse<?> getAccountByOrgId(@Header("x-UserId") String userIdHeader, String orgId) {
+        Long userId = Long.parseLong(userIdHeader);
+
+        Account account = accountRepository.findByOrgIdAndUserId(orgId, userId);
+
+        if (account == null) {
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Account not found for the given OrgId and UserId");
+        }
+
+        AccountDTO getAccountDTO = new AccountDTO(
+                account.getId(),
+                account.getOrgName(),
+                account.getOrgId(),
+                account.getProvider(),
+                account.getUserId(),
+                account.getDateCreated(),
+                account.getDateUpdated(),
+                account.getDeletedAt(),
+                account.getIsDeleted(),
+                account.getProviderId()
+        );
+        return HttpResponse.ok(getAccountDTO);
+
     }
 
 
