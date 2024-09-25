@@ -13,4 +13,7 @@
 
     <!-- Define a logger specifically for security-related messages -->
     <logger name="io.micronaut.security" level="DEBUG"/>
+
+    <!-- Define a logger for Micronaut Data to print SQL queries -->
+    <logger name="io.micronaut.data" level="DEBUG"/>
 </configuration>

@@ -57,7 +57,7 @@ public class AccountController {
 
     @Delete("/")
     public HttpResponse<?> deleteAccount(@Header("x-orgid") String orgId, Authentication authentication) {
-        var account = accountRepository.findByOrgId(orgId);
+        var account = accountRepository.findByOrgIdOrderByIdDesc(orgId);
 
         if (account == null) {
             throw new HttpStatusException(HttpStatus.NOT_FOUND, "Account not found");
@@ -82,7 +82,6 @@ public class AccountController {
 
         return HttpResponse.ok(deletedAccountDTO);
     }
-
 
     @Get("{orgId}")
     public HttpResponse<?> getAccountByOrgId(@Header("x-UserId") String userIdHeader, String orgId) {

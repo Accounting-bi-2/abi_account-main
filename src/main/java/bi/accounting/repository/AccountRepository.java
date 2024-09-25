@@ -15,4 +15,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     List<Account> findByUserId(Long userId);
     Account findByOrgId(String orgId);
     Account findByOrgIdAndUserId(String orgId, Long userId);
+    Account findByOrgIdOrderByIdDesc(String orgId);
+
 }
