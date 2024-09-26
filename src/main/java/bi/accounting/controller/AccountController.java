@@ -2,7 +2,9 @@ package bi.accounting.controller;
 
 import bi.accounting.dto.AccountDTO;
 import bi.accounting.model.Account;
+import bi.accounting.repository.AccountMemberRepository;
 import bi.accounting.repository.AccountRepository;
+import bi.accounting.service.OAuthService;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
@@ -15,10 +17,15 @@ import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Header;
 import jakarta.inject.Inject;
-
+import io.micronaut.context.annotation.Value;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.io.UnsupportedEncodingException;
 
 @Controller("/accounts")
 @Secured(SecurityRule.IS_AUTHENTICATED)  // Ensure only authenticated users can access
@@ -26,6 +33,28 @@ public class AccountController {
 
     @Inject
     private AccountRepository accountRepository;
+    @Inject
+    private OAuthService oauthService;
+    @Inject
+    private AccountMemberRepository accountMemberRepository;
+
+
+    @Value("${micronaut.security.oauth.clients.xero.client-id}")
+    private String clientId;
+
+    @Value("${micronaut.security.oauth.clients.xero.authorization.url}")
+    private String authorizationUrl;
+
+    @Value("${micronaut.security.oauth.clients.xero.token.url}")
+    private String tokenUrl;
+
+    @Value("${micronaut.security.oauth.clients.xero.scopes}")
+    private List<String> scopes;
+
+    @Value("${micronaut.security.oauth.clients.xero.redirect-uri}")
+    private String redirectUri;
+
+    /* -----------------------   */
 
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get(uri = "/health", produces = "text/plain")
@@ -129,6 +158,28 @@ public class AccountController {
                         account.getProviderId()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("/oauth/login/xero")
+    public HttpResponse<?> loginWithXero(String user) throws URISyntaxException, UnsupportedEncodingException {
+        String scopeString = URLEncoder.encode(String.join(" ", scopes), StandardCharsets.UTF_8.toString());
+        String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8.toString());
+        String encodedClientId = URLEncoder.encode(clientId, StandardCharsets.UTF_8.toString());
+        String state = oauthService.generateState();
+
+        String url = String.format(
+                "%s?scope=%s&response_type=code&redirect_uri=%s&state=%s&client_id=%s",
+                authorizationUrl,
+                scopeString,
+                encodedRedirectUri,
+                state,
+                encodedClientId
+        );
+
+        System.out.println(url);
+        URI redirectUri = new URI(url);
+        return HttpResponse.redirect(redirectUri);
     }
 
 

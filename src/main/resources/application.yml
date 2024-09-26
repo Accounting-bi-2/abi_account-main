@@ -10,6 +10,24 @@ micronaut:
     cors:
       enabled: true
   security:
+    oauth:
+      clients:
+        xero:
+          client-id: 54BC4F17DEBF4762A5EB7AC764316652
+          client-secret: pqHPB70BXxCuGaMMnqvjztBFntopwb5si5w3PkAnVgmH9ZYm
+          scopes:
+            - openid
+            - email
+            - profile
+            - offline_access
+            - accounting.transactions
+            - accounting.journals.read
+          authorization:
+            url: https://login.xero.com/identity/connect/authorize
+          token:
+            url: https://identity.xero.com/connect/token
+            auth-method: client-secret-post
+          redirect-uri: https://api.accounting.bi/accounts/oauth/callback/xero
     intercept-url-map:
       - pattern: /accounts/**
         httpMethod: GET
@@ -50,3 +68,4 @@ datasources:
     username: ${PG_USER:postgres}
     password: ${PG_PASSWORD:TtaQHd|~_Oa6~kd[#kk!$Z7Ecoqk}
     schema: accounts_schema
+
