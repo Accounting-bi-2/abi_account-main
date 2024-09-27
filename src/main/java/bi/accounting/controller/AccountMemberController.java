@@ -32,6 +32,7 @@ public class AccountMemberController {
     private ObjectMapper objectMapper;
 
     @Post
+    @Secured(SecurityRule.IS_ANONYMOUS)
     public HttpResponse<List<AccountMemberDTO>> addAccountMember(
             @Header("X-UserID") Long userId,
             @Body String accountMemberRequest) {
