@@ -1,29 +1,32 @@
 package bi.accounting.controller;
 
+import bi.accounting.client.XeroAPI;
 import bi.accounting.dto.AccountDTO;
+import bi.accounting.dto.AccountOpenIdDTO;
 import bi.accounting.model.Account;
 import bi.accounting.repository.AccountMemberRepository;
 import bi.accounting.repository.AccountRepository;
 import bi.accounting.service.OAuthService;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
+import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.authentication.Authentication;
 import io.swagger.v3.oas.annotations.Operation;
-import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.HttpStatus;
-import io.micronaut.http.annotation.Header;
 import jakarta.inject.Inject;
 import io.micronaut.context.annotation.Value;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.UnsupportedEncodingException;
 
@@ -37,7 +40,8 @@ public class AccountController {
     private OAuthService oauthService;
     @Inject
     private AccountMemberRepository accountMemberRepository;
-
+    @Inject
+    private XeroAPI xeroAPI;
 
     @Value("${micronaut.security.oauth.clients.xero.client-id}")
     private String clientId;
@@ -182,6 +186,39 @@ public class AccountController {
         return HttpResponse.redirect(redirectUri);
     }
 
+
+
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Post("/openid/{provider}")
+    public HttpResponse<?> handleOpenIdRequest(
+            @PathVariable String provider,
+            @Header("X-UserID") String userId,
+            @Body HashMap<String, Object> body) {
+
+        String idToken = (String) body.get("id_token");
+        if ("xero".equalsIgnoreCase(provider)) {
+            String accessToken = (String) body.get("access_token");
+            HttpResponse<List<HashMap<String, Object>>> response = xeroAPI.getTenants("Bearer " + accessToken);
+
+            if (response.getStatus().getCode() == 200) {
+                List<HashMap<String, Object>> tenantList = response.body();
+                List<AccountOpenIdDTO> accountOpenIdDTOList = tenantList.stream().map(tenant -> {
+                    AccountOpenIdDTO dto = new AccountOpenIdDTO();
+                    dto.setId((String) tenant.get("id"));
+                    dto.setTenantId((String) tenant.get("tenantId"));
+                    dto.setTenantType((String) tenant.get("tenantType"));
+                    dto.setTenantName((String) tenant.get("tenantName"));
+                    dto.setCreatedDateUtc((String) tenant.get("createdDateUtc"));
+                    dto.setUpdatedDateUtc((String) tenant.get("updatedDateUtc"));
+                    return dto;
+                }).collect(Collectors.toList());
+                return HttpResponse.ok(accountOpenIdDTOList);
+            } else {
+                return HttpResponse.serverError("Failed to retrieve tenants from Xero");
+            }
+        }
+        return HttpResponse.badRequest("Provider not supported: " + provider);
+    }
 
 
 }
