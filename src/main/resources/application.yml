@@ -1,4 +1,5 @@
 micronaut:
+  base-url: "https://app-stage.accounting.bi"
   application:
     name: abi_accounts
   logger:

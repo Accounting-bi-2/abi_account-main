@@ -12,7 +12,6 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.authentication.Authentication;
-import io.swagger.v3.oas.annotations.Operation;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.HttpStatus;
@@ -22,11 +21,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.UnsupportedEncodingException;
 
@@ -43,6 +40,9 @@ public class AccountController {
     @Inject
     private XeroAPI xeroAPI;
 
+    @Value("${micronaut.base-url}")
+    private String baseUrl;
+
     @Value("${micronaut.security.oauth.clients.xero.client-id}")
     private String clientId;
 
@@ -57,6 +57,8 @@ public class AccountController {
 
     @Value("${micronaut.security.oauth.clients.xero.redirect-uri}")
     private String redirectUri;
+
+
 
     /* -----------------------   */
 
@@ -218,6 +220,13 @@ public class AccountController {
             }
         }
         return HttpResponse.badRequest("Provider not supported: " + provider);
+    }
+
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    @Get("/oauth/callback/xero")
+    public MutableHttpResponse<?> handleXeroCallback() throws URISyntaxException {
+        String redirectUrl = baseUrl + "/dashboard/organisations";
+        return HttpResponse.redirect(new URI(redirectUrl));
     }
 
 
