@@ -1,7 +1,10 @@
 package bi.accounting.dto;
 
+import io.micronaut.core.annotation.Introspected;
+
 import java.util.List;
 
+@Introspected
 public class AccountMemberDTO {
 
     private Long id;

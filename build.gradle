@@ -18,22 +18,17 @@ dependencies {
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     implementation("io.swagger.core.v3:swagger-annotations")
-    implementation("io.micronaut:micronaut-jackson-databind") // This is crucial for JSON serialization
+    implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.data:micronaut-data-jdbc")
     implementation("io.micronaut.data:micronaut-data-processor")
     implementation("io.micronaut.redis:micronaut-redis-lettuce")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("jakarta.annotation:jakarta.annotation-api")
+    implementation("io.micronaut.reactor:micronaut-reactor")
     compileOnly("io.micronaut.openapi:micronaut-openapi-annotations")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.postgresql:postgresql")
-
-//    implementation("io.micronaut.security:micronaut-security-jwt")
-//    aotPlugins("io.micronaut.security:micronaut-security-aot")
-//    implementation("io.jsonwebtoken:jjwt-api:0.11.2")
-//    implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
-//    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.2")
 
     // Micronaut Security JWT
     implementation("io.micronaut.security:micronaut-security-jwt")

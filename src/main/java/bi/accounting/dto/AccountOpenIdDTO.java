@@ -1,7 +1,9 @@
 package bi.accounting.dto;
 
 
+import io.micronaut.core.annotation.Introspected;
 
+@Introspected
 public class AccountOpenIdDTO {
     private String id;
     private String tenantId;

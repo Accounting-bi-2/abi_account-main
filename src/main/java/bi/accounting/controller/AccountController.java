@@ -9,6 +9,8 @@ import bi.accounting.repository.AccountRepository;
 import bi.accounting.service.OAuthService;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.security.authentication.Authentication;
@@ -191,6 +193,7 @@ public class AccountController {
 
 
     @Secured(SecurityRule.IS_ANONYMOUS)
+    @ExecuteOn(TaskExecutors.BLOCKING)
     @Post("/openid/{provider}")
     public HttpResponse<?> handleOpenIdRequest(
             @PathVariable String provider,
@@ -200,6 +203,7 @@ public class AccountController {
         String idToken = (String) body.get("id_token");
         if ("xero".equalsIgnoreCase(provider)) {
             String accessToken = (String) body.get("access_token");
+            System.out.println("accessToken:"+accessToken);
             HttpResponse<List<HashMap<String, Object>>> response = xeroAPI.getTenants("Bearer " + accessToken);
 
             if (response.getStatus().getCode() == 200) {
