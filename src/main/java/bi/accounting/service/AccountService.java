@@ -19,6 +19,14 @@ public class AccountService {
     }
 
     public Long insertAccount(AccountOpenIdDTO dto, String provider, Long userId) {
+        Account existingAccount = accountRepository.findByOrgIdAndUserId(dto.getTenantId(), userId);
+
+        if (existingAccount != null) {
+            System.out.println("Account already exists for userId: " + userId + " and tenantId: " + dto.getTenantId());
+            System.out.println("Account ID" + existingAccount.getId());
+            return existingAccount.getId();
+        }
+
         Account account = new Account();
         account.setOrgName(dto.getTenantName());
         account.setOrgId(dto.getTenantId());
@@ -42,12 +50,15 @@ public class AccountService {
                 account.getIsDeleted()
         );
 
-        // Log the constructed SQL insert query
         System.out.println(insertQuery);
 
         accountRepository.save(account);
 
-
         return account.getId();
     }
+
+
+
+
+
 }

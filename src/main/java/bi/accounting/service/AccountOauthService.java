@@ -15,18 +15,34 @@ public class AccountOauthService {
         this.accountOauthRepository = accountOauthRepository;
     }
 
-    public void insertAccountOauth(Long accountId, HashMap<String, Object> body) {
-        AccountOauth accountOauth = new AccountOauth();
-        accountOauth.setAccountId(accountId);
-        accountOauth.setAccessToken((String) body.get("access_token"));
-        accountOauth.setRefreshToken((String) body.get("refresh_token"));
-        accountOauth.setExpiresIn(((Number) body.get("expires_in")).longValue());
-        accountOauth.setScope((String) body.get("scope"));
-        accountOauth.setTokenType((String) body.get("token_type"));
-        accountOauth.setDateCreated(OffsetDateTime.now());
-        accountOauth.setDateUpdated(OffsetDateTime.now());
-        accountOauth.setIsDeleted(false);
+    public void insertOrUpdateAccountOauth(Long accountId, HashMap<?, ?> body) {
+        System.out.println("insertOrUpdateAccountOauth: " + accountId);
+        AccountOauth accountOauth = accountOauthRepository.findByAccountId(accountId);
 
-        accountOauthRepository.save(accountOauth);
+        if (accountOauth == null) {
+            accountOauth = new AccountOauth();
+            accountOauth.setAccountId(accountId);
+            accountOauth.setDateCreated(OffsetDateTime.now());
+            accountOauth.setAccessToken((String) body.get("access_token"));
+            accountOauth.setRefreshToken((String) body.get("refresh_token"));
+            accountOauth.setExpiresIn(((Number) body.get("expires_in")).longValue());
+            accountOauth.setScope((String) body.get("scope"));
+            accountOauth.setTokenType((String) body.get("token_type"));
+            accountOauth.setDateUpdated(OffsetDateTime.now());
+            accountOauth.setIsDeleted(false);
+            accountOauthRepository.save(accountOauth);
+            System.out.println("New AccountOauth inserted");
+        } else {
+            accountOauth.setAccessToken((String) body.get("access_token"));
+            accountOauth.setRefreshToken((String) body.get("refresh_token"));
+            accountOauth.setExpiresIn(((Number) body.get("expires_in")).longValue());
+            accountOauth.setScope((String) body.get("scope"));
+            accountOauth.setTokenType((String) body.get("token_type"));
+            accountOauth.setDateUpdated(OffsetDateTime.now());
+            accountOauth.setIsDeleted(false);
+            accountOauthRepository.update(accountOauth);
+            System.out.println("Existing AccountOauth updated");
+        }
     }
+
 }

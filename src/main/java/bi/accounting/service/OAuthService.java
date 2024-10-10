@@ -8,11 +8,13 @@ import java.util.Base64;
 @Singleton
 public class OAuthService {
 
-    public String generateState() {
+    public String generateState(Long user) {
         SecureRandom secureRandom = new SecureRandom();
         byte[] randomBytes = new byte[24];
         secureRandom.nextBytes(randomBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+
+        String randomString = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+        return randomString + "__" + user;
     }
 
     public String getBasicAuthHeader(String clientId, String clientSecret) {
