@@ -3,27 +3,34 @@ package bi.accounting.service;
 import bi.accounting.dto.AccountOpenIdDTO;
 import bi.accounting.model.Account;
 import bi.accounting.repository.AccountRepository;
+import io.micronaut.transaction.annotation.Transactional;
 import jakarta.inject.Singleton;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 @Singleton
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
+    @Transactional
     public Long insertAccount(AccountOpenIdDTO dto, String provider, Long userId) {
-        Account existingAccount = accountRepository.findByOrgIdAndUserId(dto.getTenantId(), userId);
+        LOG.info("Searching for account with orgId: {} and userId: {}", dto.getTenantId(), userId);
 
-        if (existingAccount != null) {
-            System.out.println("Account already exists for userId: " + userId + " and tenantId: " + dto.getTenantId());
-            System.out.println("Account ID" + existingAccount.getId());
+        Optional<Account> existingAccountOpt = accountRepository.findByOrgIdAndUserIdAndIsDeletedFalse(dto.getTenantId(), userId);
+
+        if (existingAccountOpt.isPresent()) {
+            Account existingAccount = existingAccountOpt.get();
+            LOG.info("Account already exists for userId: {} and tenantId: {}", userId, dto.getTenantId());
+            LOG.info("Account ID: {}", existingAccount.getId());
             return existingAccount.getId();
         }
 
@@ -37,28 +44,16 @@ public class AccountService {
         account.setDateUpdated(OffsetDateTime.now());
         account.setIsDeleted(false);
 
-        String insertQuery = String.format(
-                "INSERT INTO account (org_name, org_id, provider_id, provider, user_id, date_created, date_updated, is_deleted) " +
-                        "VALUES ('%s', '%s', '%s', '%s', %d, '%s', '%s', %b)",
-                account.getOrgName(),
-                account.getOrgId(),
-                account.getProviderId(),
-                account.getProvider(),
-                account.getUserId(),
-                account.getDateCreated(),
-                account.getDateUpdated(),
-                account.getIsDeleted()
-        );
-
-        System.out.println(insertQuery);
-
-        accountRepository.save(account);
+        LOG.info("Inserting account with details: {}", account);
+        try {
+            accountRepository.save(account);
+            LOG.info("Account inserted successfully with ID: {}", account.getId());
+        } catch (Exception e) {
+            LOG.error("Failed to insert account: {}", e.getMessage(), e);
+            // Optionally, you can rethrow the exception or return a specific value to indicate failure
+            throw new RuntimeException("Failed to insert account", e);
+        }
 
         return account.getId();
     }
-
-
-
-
-
 }

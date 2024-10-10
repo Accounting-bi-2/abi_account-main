@@ -6,7 +6,9 @@ import bi.accounting.client.XeroClient;
 import bi.accounting.dto.AccountDTO;
 import bi.accounting.dto.AccountOpenIdDTO;
 import bi.accounting.model.Account;
+import bi.accounting.model.AccountOauth;
 import bi.accounting.repository.AccountMemberRepository;
+import bi.accounting.repository.AccountOauthRepository;
 import bi.accounting.repository.AccountRepository;
 import bi.accounting.service.AccountOauthService;
 import bi.accounting.service.AccountService;
@@ -44,6 +46,8 @@ public class AccountController {
 
     @Inject
     private AccountRepository accountRepository;
+    @Inject
+    private AccountOauthRepository accountOauthRepository;
     @Inject
     private OAuthService oauthService;
     @Inject
@@ -111,7 +115,7 @@ public class AccountController {
 
     @Delete("/")
     public HttpResponse<?> deleteAccount(@Header("x-orgid") String orgId, Authentication authentication) {
-        var account = accountRepository.findByOrgIdOrderByIdDesc(orgId);
+        Account account = accountRepository.findByOrgIdOrderByIdDesc(orgId);
 
         if (account == null) {
             throw new HttpStatusException(HttpStatus.NOT_FOUND, "Account not found");
@@ -120,6 +124,12 @@ public class AccountController {
         account.setIsDeleted(true);
         account.setDeletedAt(OffsetDateTime.now());
         accountRepository.update(account);
+
+        AccountOauth accountOauth = accountOauthRepository.findByAccountId(account.getId());
+        accountOauth.setDateUpdated(OffsetDateTime.now());
+        accountOauth.setIsDeleted(true);
+        accountOauthRepository.update(accountOauth);
+
 
         AccountDTO deletedAccountDTO = new AccountDTO(
                 account.getId(),

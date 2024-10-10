@@ -7,6 +7,7 @@ import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @JdbcRepository(dialect = Dialect.POSTGRES)
 public interface AccountRepository extends CrudRepository<Account, Long> {
@@ -16,5 +17,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     Account findByOrgId(String orgId);
     Account findByOrgIdAndUserId(String orgId, Long userId);
     Account findByOrgIdOrderByIdDesc(String orgId);
+    Optional<Account> findByOrgIdAndUserIdAndIsDeletedFalse(String orgId, Long userId);
 
 }
