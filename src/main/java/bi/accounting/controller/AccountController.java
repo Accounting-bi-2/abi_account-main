@@ -1,12 +1,16 @@
 package bi.accounting.controller;
 
+import bi.accounting.client.OpenIdClient;
 import bi.accounting.client.XeroAPI;
 import bi.accounting.dto.AccountDTO;
 import bi.accounting.dto.AccountOpenIdDTO;
 import bi.accounting.model.Account;
 import bi.accounting.repository.AccountMemberRepository;
 import bi.accounting.repository.AccountRepository;
+import bi.accounting.service.AccountOauthService;
+import bi.accounting.service.AccountService;
 import bi.accounting.service.OAuthService;
+import io.micronaut.data.exceptions.DataAccessException;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
@@ -19,6 +23,8 @@ import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.HttpStatus;
 import jakarta.inject.Inject;
 import io.micronaut.context.annotation.Value;
+import reactor.core.publisher.Mono;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -26,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.io.UnsupportedEncodingException;
 
@@ -41,8 +48,15 @@ public class AccountController {
     private AccountMemberRepository accountMemberRepository;
     @Inject
     private XeroAPI xeroAPI;
+    @Inject
+    private AccountService accountService;
+    @Inject
+    private AccountOauthService accountOauthService;
+    @Inject
+    private OpenIdClient openIdClient;
 
-    @Value("${micronaut.base-url}")
+
+    @Value("${micronaut.server.base-url}")
     private String baseUrl;
 
     @Value("${micronaut.security.oauth.clients.xero.client-id}")
@@ -200,24 +214,36 @@ public class AccountController {
             @Header("X-UserID") String userId,
             @Body HashMap<String, Object> body) {
 
-        String idToken = (String) body.get("id_token");
         if ("xero".equalsIgnoreCase(provider)) {
             String accessToken = (String) body.get("access_token");
-            System.out.println("accessToken:"+accessToken);
+            System.out.println("accessToken:" + accessToken);
             HttpResponse<List<HashMap<String, Object>>> response = xeroAPI.getTenants("Bearer " + accessToken);
 
             if (response.getStatus().getCode() == 200) {
                 List<HashMap<String, Object>> tenantList = response.body();
-                List<AccountOpenIdDTO> accountOpenIdDTOList = tenantList.stream().map(tenant -> {
-                    AccountOpenIdDTO dto = new AccountOpenIdDTO();
-                    dto.setId((String) tenant.get("id"));
-                    dto.setTenantId((String) tenant.get("tenantId"));
-                    dto.setTenantType((String) tenant.get("tenantType"));
-                    dto.setTenantName((String) tenant.get("tenantName"));
-                    dto.setCreatedDateUtc((String) tenant.get("createdDateUtc"));
-                    dto.setUpdatedDateUtc((String) tenant.get("updatedDateUtc"));
-                    return dto;
-                }).collect(Collectors.toList());
+                List<AccountOpenIdDTO> accountOpenIdDTOList = tenantList.stream()
+                        .filter(tenant -> "ORGANISATION".equalsIgnoreCase((String) tenant.get("tenantType"))) // Filter by ORGANISATION
+                        .map(tenant -> {
+                            AccountOpenIdDTO dto = new AccountOpenIdDTO();
+                            dto.setId((String) tenant.get("id"));
+                            dto.setTenantId((String) tenant.get("tenantId"));
+                            dto.setTenantType((String) tenant.get("tenantType"));
+                            dto.setTenantName((String) tenant.get("tenantName"));
+                            dto.setCreatedDateUtc((String) tenant.get("createdDateUtc"));
+                            dto.setUpdatedDateUtc((String) tenant.get("updatedDateUtc"));
+                            return dto;
+                        }).collect(Collectors.toList());
+
+                accountOpenIdDTOList.forEach(dto -> {
+                    try {
+                        Long insertedAccountId = accountService.insertAccount(dto, provider, Long.valueOf(userId));
+                        accountOauthService.insertAccountOauth(insertedAccountId, body);
+
+                    } catch (DataAccessException e) {
+                        System.err.println("Failed to insert account or account OAuth for tenant: " + e.getMessage());
+                    }
+                });
+
                 return HttpResponse.ok(accountOpenIdDTOList);
             } else {
                 return HttpResponse.serverError("Failed to retrieve tenants from Xero");
@@ -226,11 +252,38 @@ public class AccountController {
         return HttpResponse.badRequest("Provider not supported: " + provider);
     }
 
+
+
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Get("/oauth/callback/xero")
-    public MutableHttpResponse<?> handleXeroCallback() throws URISyntaxException {
-        String redirectUrl = baseUrl + "/dashboard/organisations";
-        return HttpResponse.redirect(new URI(redirectUrl));
+    public Mono<MutableHttpResponse<Object>> handleXeroCallback(@QueryValue Optional<String> code) {
+        if (code.isPresent()) {
+            // If the code is provided, use it to get the token
+            return openIdClient.getToken("xero", code.get())
+                    .flatMap(token -> {
+                        System.out.println("Received Token: " + token);
+
+                        String redirectUrl = baseUrl + "/dashboard/organisations";
+                        try {
+                            return Mono.just(HttpResponse.redirect(new URI(redirectUrl)));
+                        } catch (URISyntaxException e) {
+                            return Mono.error(new RuntimeException("Failed to redirect", e));
+                        }
+                    })
+                    .onErrorResume(throwable -> {
+                        // Handle error case
+                        System.err.println("Error during token exchange: " + throwable.getMessage());
+                        return Mono.just(HttpResponse.serverError("Failed to retrieve token"));
+                    });
+        } else {
+            // If the code is not provided, just redirect to the dashboard
+            String redirectUrl = baseUrl + "/dashboard/organisations";
+            try {
+                return Mono.just(HttpResponse.redirect(new URI(redirectUrl)));
+            } catch (URISyntaxException e) {
+                return Mono.error(new RuntimeException("Failed to redirect", e));
+            }
+        }
     }
 
 

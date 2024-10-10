@@ -1,6 +1,7 @@
 package bi.accounting.model;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.data.annotation.GeneratedValue;
 import io.micronaut.data.annotation.MappedEntity;
 import io.micronaut.data.annotation.Id;
 
@@ -11,6 +12,7 @@ import java.time.OffsetDateTime;
 public class Account {
 
     @Id
+    @GeneratedValue
     private Long id;
 
     private String orgName;

@@ -1,12 +1,11 @@
 micronaut:
-  base-url: "https://app-stage.accounting.bi"
   application:
     name: abi_accounts
   logger:
     levels:
       io.r2dbc.postgresql.client.ReactorNettyClient: INFO
   server:
-    base-url: ${APP_BASE_URL:http://localhost:8080}
+    base-url: ${APP_BASE_URL:http://localhost:3000}
     port: ${APP_PORT:8080}
     cors:
       enabled: true
@@ -21,14 +20,19 @@ micronaut:
             - email
             - profile
             - offline_access
+            - accounting.settings
             - accounting.transactions
+            - accounting.contacts
             - accounting.journals.read
+            - accounting.budgets.read
+            - accounting.reports.read
+            - accounting.attachments
           authorization:
             url: https://login.xero.com/identity/connect/authorize
           token:
             url: https://identity.xero.com/connect/token
             auth-method: client-secret-post
-          redirect-uri: https://api.accounting.bi/accounts/oauth/callback/xero
+          redirect-uri: https://api-stage.accounting.bi/accounts/oauth/callback/xero
     intercept-url-map:
       - pattern: /accounts/**
         httpMethod: GET
@@ -69,4 +73,8 @@ datasources:
     username: ${PG_USER:postgres}
     password: ${PG_PASSWORD:TtaQHd|~_Oa6~kd[#kk!$Z7Ecoqk}
     schema: accounts_schema
+
+openid-client:
+  uri: ${CALLBACK_URI:http://localhost:8081}
+
 
