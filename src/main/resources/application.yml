@@ -33,6 +33,7 @@ micronaut:
             url: https://identity.xero.com/connect/token
             auth-method: client-secret-post
           redirect-uri: https://api-stage.accounting.bi/accounts/oauth/callback/xero
+          oauth-success-redirect: {OAUTH_SUCCESS_REDIRECT}
     intercept-url-map:
       - pattern: /accounts/**
         httpMethod: GET

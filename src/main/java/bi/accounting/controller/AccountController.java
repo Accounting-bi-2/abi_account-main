@@ -66,8 +66,6 @@ public class AccountController {
     private OpenIdClient openIdClient;
 
 
-    @Value("${micronaut.server.base-url}")
-    private String baseUrl;
     @Value("${micronaut.security.oauth.clients.xero.client-id}")
     private String clientId;
     @Value("${micronaut.security.oauth.clients.xero.client-secret}")
@@ -80,9 +78,8 @@ public class AccountController {
     private List<String> scopes;
     @Value("${micronaut.security.oauth.clients.xero.redirect-uri}")
     private String redirectUri;
-
-
-
+    @Value("${micronaut.security.oauth.clients.xero.oauth-success-redirect}")
+    private String successRedirect;
     /* -----------------------   */
 
     @Secured(SecurityRule.IS_ANONYMOUS)
@@ -285,8 +282,7 @@ public class AccountController {
                         }
                     });
 
-                    String redirectUrl = baseUrl + "/dashboard/organisations";
-                    return HttpResponse.redirect(new URI(redirectUrl));
+                    return HttpResponse.redirect(new URI(successRedirect));
                 } else {
                     return HttpResponse.serverError("Failed to fetch tenants from Xero");
                 }
@@ -295,8 +291,7 @@ public class AccountController {
             }
         }
         else {
-            String redirectUrl = baseUrl + "/dashboard/organisations";
-            return HttpResponse.redirect(new URI(redirectUrl));
+            return HttpResponse.redirect(new URI(successRedirect));
         }
     }
 
